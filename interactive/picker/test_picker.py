@@ -1,7 +1,7 @@
 import unittest, logging
 from random import shuffle
 
-from interactive.picker import PickableBase
+from interactive.picker.items import PickableBase
 from sink.unittest import LoggedTestCase
 
 class TestPickableItems(LoggedTestCase):
