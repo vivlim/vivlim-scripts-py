@@ -1,3 +1,5 @@
+# see: https://www.reddit.com/r/synology/comments/d1id10/psa_you_actually_can_delete_individual_files_from/
+
 import btrfsutil
 import os
 import argparse
@@ -7,7 +9,7 @@ parser = argparse.ArgumentParser(
     prog='btrfs-retcon',
     description='Removes a file from all snapshots it exists in, temporarily making those snapshots rw to do so')
 parser.add_argument('path_to_remove')
-parser.add_argument('-V', '--volume', default='/')
+parser.add_argument('-V', '--volume', default='/') # todo: make this work correctly. it doesn't!
     
 args = parser.parse_args()
 
