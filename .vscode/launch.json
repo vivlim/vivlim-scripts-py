@@ -20,10 +20,32 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "Python Debugger: all unit tests",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "unittest",
+            "args": ["discover"],
+            "console": "integratedTerminal"
+        },
+        {
             "name": "Python Debugger: picker ut",
             "type": "debugpy",
             "request": "launch",
             "module": "interactive.picker.test_picker",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Python Debugger: queue exec",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "test_queue_executor",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Python Debugger: async",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "test_async",
             "console": "integratedTerminal"
         },
 
