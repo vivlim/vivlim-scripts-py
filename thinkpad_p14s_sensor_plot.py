@@ -6,6 +6,7 @@
 #   "qtconsole",
 #   "pyside6==6.9.0", # https://github.com/pyqtgraph/pyqtgraph/issues/3328
 #   "gitpython",
+#   "psutil",
 # ]
 # ///
 
@@ -14,6 +15,7 @@
 import pyqtgraph as pg
 import numpy
 import pathlib, typing,sys
+import psutil
 from pyqtgraph.Qt import QtCore, QtGui
 from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout
 #pyqtgraph.examples.run()
@@ -106,6 +108,29 @@ class Latch:
         finally:
             self.current_x += 1
 
+class FuncSeries:
+    def __init__(self, plot):
+        self.plot = plot
+        self.values = []
+        self.xAxis = [0]
+        self.x = 1
+        self.values.append(self.sample())
+    def update(self):
+        self.xAxis.append(self.x)
+        val = self.sample()
+        self.values.append(val)
+        self.plot.setData(self.xAxis, self.values)
+        self.x += 1
+
+    def sample(self):
+        raise Exception("no")
+
+class CpuFuncSeries(FuncSeries):
+    def __init__(self, plot):
+        super().__init__(plot)
+
+    def sample(self):
+        return psutil.cpu_percent(interval=None)
 
 class MainWindow(QMainWindow):
 
@@ -122,8 +147,17 @@ class MainWindow(QMainWindow):
         self.configGraphWidget = pg.PlotWidget()
         self.configGraphWidget.addLegend()
         self.configGraphWidget.setXLink(self.graphWidget)
-        self.layout.addWidget(self.graphWidget)
-        self.layout.addWidget(self.configGraphWidget)
+
+        self.cpuGraphWidget = pg.PlotWidget()
+        self.cpuGraphWidget.addLegend()
+        self.cpuGraphWidget.setXLink(self.graphWidget)
+        self.cpuGraphWidget.setYRange(0, 100)
+        self.cpuGraphWidgetFuncSeries = [CpuFuncSeries(self.cpuGraphWidget.plot(name='cpu'))]
+
+        self.graphWidgets = [self.graphWidget, self.configGraphWidget, self.cpuGraphWidget]
+        for gw in self.graphWidgets:
+            self.layout.addWidget(gw)
+
         self.cwidget = QWidget()
         self.cwidget.setLayout(self.layout)
         self.setCentralWidget(self.cwidget)
@@ -149,6 +183,7 @@ class MainWindow(QMainWindow):
             self._timer_update()
         self.timer.timeout.connect(timer_func)
         self.timer.start(500)
+
     def plot_update(self):
         global fan_info
         for name in data:
@@ -158,9 +193,13 @@ class MainWindow(QMainWindow):
         level_changed = self.fan_mode_latch.push(fi['level'])
         if level_changed:
             prev_level, min_x, max_x = level_changed
-            region = pg.LinearRegionItem(movable=False, values=[min_x, max_x])
-            self.configGraphWidget.addItem(region)
-            label = pg.InfLineLabel(region.lines[0], f'level: {prev_level}', position=0.70, rotateAxis=(1,0), anchor=(1,1))
+            for g in self.graphWidgets:
+                region = pg.LinearRegionItem(movable=False, values=[min_x, max_x])
+                g.addItem(region)
+                label = pg.InfLineLabel(region.lines[0], f'level: {prev_level}', position=0.70, rotateAxis=(1,0), anchor=(1,1))
+
+        for func_series in self.cpuGraphWidgetFuncSeries:
+            func_series.update()
 
 
         next_fan_info = fan_info()
