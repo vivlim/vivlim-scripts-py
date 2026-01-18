@@ -22,6 +22,10 @@ from pprint import pprint
 # move the original somewhere, then `btrfs subvolume create /wherever/it/was`
 # cp --archive --one-file-system --reflink=always /original /wherever/it/was
 # then clean up the original copy
+#
+# tell snapper to delete a bunch of snapshots for a config
+# snapper -c root delete --sync 1-979
+# see also https://wiki.archlinux.org/title/Snapper#Delete_a_snapshot
 
 parser = argparse.ArgumentParser(
     prog='btrfs-retcon',
